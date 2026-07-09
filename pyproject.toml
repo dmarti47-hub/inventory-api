@@ -13,7 +13,7 @@ dependencies = [
     "alembic",
     "python-jose[cryptography]",
     "passlib[bcrypt]",
-    "python-multipart"
+    "python-multipart",
 ]
 
 [dependency-groups]
