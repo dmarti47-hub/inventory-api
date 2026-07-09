@@ -1,0 +1,24 @@
+[project]
+name = "inventory-api"
+version = "0.1.0"
+description = "Inventory and order management backend API built with FastAPI and PostgreSQL."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "psycopg[binary]",
+    "pydantic-settings",
+    "alembic",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]",
+    "python-multipart"
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "httpx",
+    "ruff"
+]
