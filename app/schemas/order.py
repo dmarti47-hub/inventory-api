@@ -1,7 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+
+OrderStatus = Literal["pending", "paid", "shipped", "canceled"]
 
 
 class OrderItemCreate(BaseModel):
@@ -12,6 +16,10 @@ class OrderItemCreate(BaseModel):
 class OrderCreate(BaseModel):
     customer_name: str = Field(..., min_length=1, max_length=150)
     items: list[OrderItemCreate] = Field(..., min_length=1)
+
+
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus
 
 
 class OrderItemRead(BaseModel):

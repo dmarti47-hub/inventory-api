@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.database import get_db
 from app.models.order import Order
-from app.schemas.order import OrderCreate, OrderRead
-from app.services.order_service import create_order
+from app.schemas.order import OrderCreate, OrderRead, OrderStatusUpdate
+from app.services.order_service import create_order, update_order_status
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -53,3 +53,16 @@ def get_order(order_id: int, db: Session = Depends(get_db)):
         )
 
     return order
+
+
+@router.patch("/{order_id}/status", response_model=OrderRead)
+def change_order_status(
+    order_id: int,
+    status_data: OrderStatusUpdate,
+    db: Session = Depends(get_db),
+):
+    return update_order_status(
+        db=db,
+        order_id=order_id,
+        new_status=status_data.status,
+    )
