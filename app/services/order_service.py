@@ -9,7 +9,6 @@ from app.models.order import Order, OrderItem
 from app.models.product import Product
 from app.schemas.order import OrderCreate
 
-
 VALID_STATUS_TRANSITIONS = {
     "pending": {"paid", "canceled"},
     "paid": {"shipped", "canceled"},
@@ -26,11 +25,7 @@ def create_order(db: Session, order_data: OrderCreate) -> Order:
 
     product_ids = list(quantity_by_product_id.keys())
 
-    statement = (
-        select(Product)
-        .where(Product.id.in_(product_ids))
-        .with_for_update()
-    )
+    statement = select(Product).where(Product.id.in_(product_ids)).with_for_update()
 
     products = db.scalars(statement).all()
     products_by_id = {product.id: product for product in products}
@@ -107,8 +102,7 @@ def update_order_status(db: Session, order_id: int, new_status: str) -> Order:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
-                f"Cannot change order status from '{order.status}' "
-                f"to '{new_status}'."
+                f"Cannot change order status from '{order.status}' to '{new_status}'."
             ),
         )
 
@@ -124,9 +118,7 @@ def update_order_status(db: Session, order_id: int, new_status: str) -> Order:
 
 def _get_order_with_items(db: Session, order_id: int) -> Order:
     statement = (
-        select(Order)
-        .where(Order.id == order_id)
-        .options(selectinload(Order.items))
+        select(Order).where(Order.id == order_id).options(selectinload(Order.items))
     )
 
     order = db.scalar(statement)
@@ -162,11 +154,7 @@ def _get_order_with_items_for_update(db: Session, order_id: int) -> Order:
 def _restore_stock_for_order(db: Session, order: Order) -> None:
     product_ids = [item.product_id for item in order.items]
 
-    statement = (
-        select(Product)
-        .where(Product.id.in_(product_ids))
-        .with_for_update()
-    )
+    statement = select(Product).where(Product.id.in_(product_ids)).with_for_update()
 
     products = db.scalars(statement).all()
     products_by_id = {product.id: product for product in products}

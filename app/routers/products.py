@@ -18,12 +18,12 @@ def create_product(product_data: ProductCreate, db: Session = Depends(get_db)):
 
     try:
         db.commit()
-    except IntegrityError:
+    except IntegrityError as err:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A product with this SKU already exists.",
-        )
+        ) from err
 
     db.refresh(product)
     return product
@@ -80,12 +80,12 @@ def update_product(
 
     try:
         db.commit()
-    except IntegrityError:
+    except IntegrityError as err:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A product with this SKU already exists.",
-        )
+        ) from err
 
     db.refresh(product)
     return product

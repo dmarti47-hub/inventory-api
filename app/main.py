@@ -10,7 +10,10 @@ from app.routers.reports import router as reports_router
 
 app = FastAPI(
     title="Inventory API",
-    description="Inventory and order management backend with stock validation, order workflows, and reporting.",
+    description=(
+        "Inventory and order management backend with stock validation, "
+        "order workflows, and reporting."
+    ),
     version="0.1.0",
 )
 

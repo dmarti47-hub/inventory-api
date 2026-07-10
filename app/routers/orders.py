@@ -39,9 +39,7 @@ def list_orders(
 @router.get("/{order_id}", response_model=OrderRead)
 def get_order(order_id: int, db: Session = Depends(get_db)):
     statement = (
-        select(Order)
-        .where(Order.id == order_id)
-        .options(selectinload(Order.items))
+        select(Order).where(Order.id == order_id).options(selectinload(Order.items))
     )
 
     order = db.scalar(statement)

@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from app.models.order import Order
 from app.models.product import Product
 
-
 REVENUE_STATUSES = ["paid", "shipped"]
 
 
@@ -22,13 +21,10 @@ def get_low_stock_products(db: Session, threshold: int) -> list[Product]:
 
 
 def get_revenue_summary(db: Session) -> dict:
-    statement = (
-        select(
-            func.count(Order.id),
-            func.sum(Order.total_amount),
-        )
-        .where(Order.status.in_(REVENUE_STATUSES))
-    )
+    statement = select(
+        func.count(Order.id),
+        func.sum(Order.total_amount),
+    ).where(Order.status.in_(REVENUE_STATUSES))
 
     order_count, total_revenue = db.execute(statement).one()
 
