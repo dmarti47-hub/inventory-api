@@ -11,5 +11,15 @@ services:
     volumes:
       - inventory_postgres_data:/var/lib/postgresql/data
 
+  test_db:
+    image: postgres:16
+    container_name: inventory_test_db
+    environment:
+      POSTGRES_DB: inventory_test_db
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_pass
+    ports:
+      - "5434:5432"
+
 volumes:
   inventory_postgres_data:
