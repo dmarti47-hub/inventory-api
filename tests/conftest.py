@@ -12,7 +12,10 @@ from app.main import app
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
-    "postgresql+psycopg://inventory_user:inventory_pass@localhost:5434/inventory_test_db",
+    (
+        "postgresql+psycopg://inventory_user:inventory_pass"
+        "@localhost:5434/inventory_test_db"
+    ),
 )
 
 engine = create_engine(TEST_DATABASE_URL)
@@ -25,26 +28,24 @@ TestingSessionLocal = sessionmaker(
 
 
 @pytest.fixture()
-def db_session() -> Generator[Session, None, None]:
+def reset_database() -> Generator[None, None, None]:
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
-    db = TestingSessionLocal()
+    yield
 
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(bind=engine)
+    Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture()
-def client(db_session: Session) -> Generator[TestClient, None, None]:
+def client(reset_database: None) -> Generator[TestClient, None, None]:
     def override_get_db() -> Generator[Session, None, None]:
+        db = TestingSessionLocal()
+
         try:
-            yield db_session
+            yield db
         finally:
-            pass
+            db.close()
 
     app.dependency_overrides[get_db] = override_get_db
 
