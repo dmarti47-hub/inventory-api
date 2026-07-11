@@ -1,4 +1,4 @@
-.PHONY: run test test-cov lint format db-up db-down docker-up docker-down docker-logs
+.PHONY: run test test-cov lint format db-up db-down docker-up docker-down docker-logs seed
 
 run:
 	uv run uvicorn app.main:app --reload --port 8001
@@ -29,3 +29,6 @@ docker-down:
 
 docker-logs:
 	docker compose logs -f api
+
+seed:
+	uv run python -m scripts.seed_demo_data
