@@ -1,35 +1,199 @@
-# Inventory API
+# Inventory Control
 
-A backend inventory and order management API built with **FastAPI**, **PostgreSQL**, **SQLAlchemy**, and **Docker**.
+[![CI](https://github.com/dmarti47-hub/inventory-api/actions/workflows/ci.yml/badge.svg)](https://github.com/dmarti47-hub/inventory-api/actions/workflows/ci.yml)
 
-This project simulates a realistic backend system for managing products, inventory adjustments, customer orders, order status workflows, business reports, and CSV exports. It focuses on backend fundamentals that matter in real applications: relational database modeling, validation, transactions, stock control, automated testing, and clean API design.
+A full-stack inventory and order management application built with React, TypeScript, FastAPI, PostgreSQL, and Docker.
+
+The application models a practical operations workflow: product management, auditable stock adjustments, transaction-safe order placement, order status transitions, low-stock monitoring, revenue reporting, and CSV exports.
+
+![Inventory Control dashboard](docs/screenshots/frontend-dashboard.png)
 
 ## Project Highlights
 
-- Built with FastAPI and PostgreSQL
-- Product CRUD with SKU uniqueness validation
-- Inventory adjustment workflow with audit history
-- Transaction-safe order creation
-- Overselling prevention through stock validation
-- Order status workflow: pending, paid, shipped, canceled
-- Canceling an order restores inventory before shipment
-- Low-stock and revenue summary reports
-- CSV exports for products, low-stock items, and orders
-- Dockerized PostgreSQL setup
-- Automated pytest suite with 91% test coverage
-- Ruff linting and formatting support
-- GitHub Actions CI for automated linting and testing
+- React and TypeScript operations dashboard
+- Live product, inventory, order, and revenue data
+- Product search by name or SKU
+- Auditable inventory adjustment workflow
+- Multi-item order creation with stock validation
+- Order status workflow with automatic inventory restoration
+- Transaction-safe backend operations using database row locking
+- PostgreSQL persistence and Alembic migrations
+- Nginx reverse proxy for the containerized frontend
+- One-command full-stack Docker Compose setup
+- Automated backend and frontend tests
+- GitHub Actions CI for linting, testing, and production builds
+- CSV exports for operational reporting
 
-## Demo
+## Tech Stack
 
-This project includes seeded demo data so the API can be reviewed quickly through the Swagger documentation.
+| Area | Technologies |
+|---|---|
+| Frontend | React, TypeScript, Vite |
+| Routing | React Router |
+| Server State | TanStack Query |
+| Frontend Testing | Vitest, Testing Library, jsdom |
+| Frontend Quality | ESLint, TypeScript compiler |
+| API | FastAPI, Pydantic |
+| Database | PostgreSQL |
+| ORM | SQLAlchemy |
+| Migrations | Alembic |
+| Backend Testing | Pytest, Pytest-Cov |
+| Backend Quality | Ruff |
+| Web Server | Nginx |
+| Containers | Docker, Docker Compose |
+| Python Packages | uv |
+| Continuous Integration | GitHub Actions |
 
-### Run the Demo Locally
+## Features
 
-Start PostgreSQL:
+### Dashboard
+
+The dashboard retrieves live data from the FastAPI backend and displays:
+
+- Total active products
+- Units currently in stock
+- Number of low-stock products
+- Revenue from paid and shipped orders
+- Low-stock inventory details
+- Current API connection status
+
+### Products
+
+The Products page provides:
+
+- Active product catalog
+- SKU, price, quantity, and status information
+- Search by product name or SKU
+- Shared query caching with the dashboard and inventory pages
+
+The API also supports product creation, updates, lookup, and soft deletion.
+
+### Inventory
+
+Inventory can be increased or decreased through a dedicated adjustment workflow.
+
+Each adjustment records:
+
+- Product
+- Quantity change
+- Reason
+- Timestamp
+- Previous quantity
+- New quantity
+
+Business rules prevent zero-value adjustments, inactive-product changes, and stock levels below zero.
+
+### Orders
+
+Users can:
+
+- Create orders containing multiple products
+- Add or remove order lines
+- Filter orders by status
+- Mark pending orders as paid
+- Ship paid orders
+- Cancel eligible orders
+
+The backend validates the complete order before changing inventory. Duplicate product lines are combined, overselling is rejected, and canceling an unshipped order restores stock.
+
+### Reports and Exports
+
+The API provides:
+
+- Low-stock reports
+- Revenue summaries
+- Product CSV exports
+- Low-stock CSV exports
+- Order CSV exports
+- Order export filtering by status
+
+Revenue totals include only paid and shipped orders.
+
+## Order Status Workflow
+
+| Current status | Allowed next status |
+|---|---|
+| `pending` | `paid`, `canceled` |
+| `paid` | `shipped`, `canceled` |
+| `shipped` | Final status |
+| `canceled` | Final status |
+
+## Quick Start with Docker
+
+### Requirements
+
+- Docker
+- Docker Compose
+
+Clone the repository:
 
 ```bash
-docker compose up -d db
+git clone https://github.com/dmarti47-hub/inventory-api.git
+cd inventory-api
+```
+
+Build and start the complete application:
+
+```bash
+docker compose up --build -d
+```
+
+Load the demonstration data:
+
+```bash
+docker compose exec api uv run python -m scripts.seed_demo_data
+```
+
+Open the application:
+
+| Service | URL |
+|---|---|
+| React frontend | http://localhost:5173 |
+| FastAPI documentation | http://localhost:8001/docs |
+| FastAPI health check | http://localhost:8001/health |
+
+Check container health:
+
+```bash
+docker compose ps
+```
+
+Stop the application:
+
+```bash
+docker compose down
+```
+
+The PostgreSQL application data is stored in a named Docker volume and remains available after the containers stop.
+
+## Local Development
+
+### Requirements
+
+- Python 3.12
+- uv
+- Node.js 24
+- npm
+- Docker Compose
+
+### Backend setup
+
+Create the local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Start the application and test databases:
+
+```bash
+docker compose up -d db test_db
+```
+
+Install Python dependencies:
+
+```bash
+uv sync --all-groups
 ```
 
 Run migrations:
@@ -50,84 +214,32 @@ Start the API:
 uv run uvicorn app.main:app --reload --port 8001
 ```
 
-Open the API docs:
+### Frontend setup
 
-```text
-http://127.0.0.1:8001/docs
+In a second terminal:
+
+```bash
+cd frontend
+cp .env.example .env.local
+npm ci
+npm run dev
 ```
 
-Recommended demo endpoints:
+Open:
 
 ```text
-GET /products
-GET /orders
-GET /reports/low-stock?threshold=5
-GET /reports/revenue-summary
-GET /reports/products.csv
-GET /reports/orders.csv
+http://localhost:5173
 ```
 
-The seed script creates:
+The local frontend communicates with:
 
-- Sample products such as laptops, monitors, keyboards, mice, and docking stations
-- Inventory adjustment history
-- Pending, paid, shipped, and canceled demo orders
-- Data for low-stock and revenue reports
+```text
+http://127.0.0.1:8001
+```
 
-### Demo Screenshots
-
-#### Swagger API Documentation
-
-![Swagger API docs](docs/screenshots/swagger-docs.png)
-
-#### Products Endpoint
-
-![Products endpoint](docs/screenshots/products-endpoint.png)
-
-#### Orders Endpoint
-
-![Orders endpoint](docs/screenshots/orders-endpoint.png)
-
-#### Revenue Summary Report
-
-![Revenue summary](docs/screenshots/revenue-summary.png)
-
-#### Test Coverage
-
-![Test coverage](docs/screenshots/test-coverage.png)
-
-## Tech Stack
-
-| Area | Technology |
-|---|---|
-| API Framework | FastAPI |
-| Database | PostgreSQL |
-| ORM | SQLAlchemy |
-| Migrations | Alembic |
-| Validation | Pydantic |
-| Testing | Pytest |
-| Coverage | Pytest-Cov |
-| Linting/Formatting | Ruff |
-| Local Services | Docker Compose |
-| Package Management | uv |
-| CI | GitHub Actions |
-
-## Core Features
+## API Overview
 
 ### Products
-
-The API supports product creation, listing, updating, lookup by ID, and soft deletion.
-
-Product fields include:
-
-- SKU
-- Name
-- Description
-- Quantity
-- Price
-- Active status
-
-Example endpoints:
 
 ```text
 POST   /products
@@ -137,28 +249,14 @@ PATCH  /products/{product_id}
 DELETE /products/{product_id}
 ```
 
-### Inventory Adjustments
-
-Inventory can be increased or decreased through a dedicated adjustment endpoint. Each adjustment is recorded for audit/history purposes.
-
-Example endpoints:
+### Inventory
 
 ```text
 POST /inventory/adjust
 GET  /inventory/adjustments
 ```
 
-Business rules:
-
-- Inventory adjustments cannot reduce stock below zero.
-- Quantity changes cannot be zero.
-- Inactive products cannot have inventory adjusted.
-
 ### Orders
-
-Orders can contain one or more products. When an order is placed, the API validates inventory, calculates totals, creates order items, and deducts stock.
-
-Example endpoints:
 
 ```text
 POST  /orders
@@ -167,142 +265,32 @@ GET   /orders/{order_id}
 PATCH /orders/{order_id}/status
 ```
 
-Business rules:
-
-- Orders require at least one item.
-- Item quantities must be positive.
-- Products must exist and be active.
-- Orders cannot exceed available stock.
-- Duplicate product lines are combined into one order item.
-- Stock is deducted only after validation succeeds.
-
-### Order Status Workflow
-
-Supported order statuses:
-
-```text
-pending
-paid
-shipped
-canceled
-```
-
-Allowed transitions:
-
-| Current Status | Allowed Next Status |
-|---|---|
-| pending | paid, canceled |
-| paid | shipped, canceled |
-| shipped | final status |
-| canceled | final status |
-
-Canceling an order before shipment restores the ordered quantity back to inventory.
-
 ### Reports
-
-The API includes business-facing report endpoints.
 
 ```text
 GET /reports/low-stock
 GET /reports/revenue-summary
-```
-
-Revenue reports only include orders with a status of:
-
-```text
-paid
-shipped
-```
-
-Pending and canceled orders are excluded from revenue totals.
-
-### CSV Exports
-
-The API supports downloadable CSV exports:
-
-```text
 GET /reports/products.csv
 GET /reports/low-stock.csv
 GET /reports/orders.csv
 ```
 
-These exports make the project more realistic by showing how backend systems often support reporting and business operations.
-
 ## Database Design
 
-Main tables:
+The primary tables are:
 
-```text
-products
-inventory_adjustments
-orders
-order_items
-```
+- `products`
+- `inventory_adjustments`
+- `orders`
+- `order_items`
 
-Relationships:
+Order items preserve the product price at the time of purchase so historical totals do not change when catalog prices are updated.
 
-- A product can appear in many order items.
-- An order has many order items.
-- A product can have many inventory adjustments.
-- Order items store the product price at the time of purchase.
+Database transactions and row-level locking protect inventory during order placement and stock adjustments.
 
-This prevents historical orders from changing if the product price changes later.
+## Testing
 
-## Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/Dmarti47-hub/inventory-api.git
-cd inventory-api
-```
-
-### 2. Create the environment file
-
-Create a `.env` file:
-
-```bash
-cp .env.example .env
-```
-
-Example environment values:
-
-```env
-DATABASE_URL=postgresql+psycopg://inventory_user:inventory_pass@localhost:5433/inventory_db
-TEST_DATABASE_URL=postgresql+psycopg://inventory_user:inventory_pass@localhost:5434/inventory_test_db
-```
-
-### 3. Start PostgreSQL
-
-```bash
-docker compose up -d db test_db
-```
-
-### 4. Install dependencies
-
-```bash
-uv sync
-```
-
-### 5. Run migrations
-
-```bash
-uv run alembic upgrade head
-```
-
-### 6. Start the API
-
-```bash
-uv run uvicorn app.main:app --reload --port 8001
-```
-
-The API docs will be available at:
-
-```text
-http://127.0.0.1:8001/docs
-```
-
-## Running Tests
+### Backend
 
 Start the test database:
 
@@ -310,109 +298,89 @@ Start the test database:
 docker compose up -d test_db
 ```
 
-Run the test suite:
+Run linting:
 
 ```bash
-uv run pytest -v
+uv run ruff check .
 ```
 
-Run tests with coverage:
+Run the test suite with coverage:
 
 ```bash
 uv run pytest --cov=app --cov-report=term-missing
 ```
 
-Current test result:
+Current backend result:
 
 ```text
 21 passed
 91% coverage
 ```
 
-## Linting and Formatting
-
-Run Ruff linting:
+### Frontend
 
 ```bash
-uv run ruff check .
+cd frontend
+npm ci
+npm test
+npm run lint
+npm run build
 ```
 
-Format code:
+The frontend test suite verifies successful API responses, inventory adjustment requests, and backend error handling.
 
-```bash
-uv run ruff format .
+## Continuous Integration
+
+GitHub Actions runs separate backend and frontend jobs for every pull request.
+
+The backend job:
+
+- Starts PostgreSQL
+- Installs Python dependencies
+- Runs Ruff
+- Runs Pytest with coverage
+
+The frontend job:
+
+- Installs dependencies with `npm ci`
+- Runs Vitest
+- Runs ESLint
+- Performs a TypeScript and Vite production build
+
+## Project Structure
+
+```text
+inventory-api/
+├── app/                    FastAPI application
+│   ├── models/             SQLAlchemy models
+│   ├── routers/            API route handlers
+│   ├── schemas/            Pydantic request/response models
+│   └── services/           Business logic and reporting
+├── frontend/               React and TypeScript application
+│   └── src/
+│       ├── api/            API client and tests
+│       └── pages/          Dashboard, products, inventory, and orders
+├── alembic/                Database migrations
+├── tests/                  Backend test suite
+├── scripts/                Demo data utilities
+├── docs/screenshots/       Portfolio screenshots
+├── .github/workflows/      Continuous integration
+├── docker-compose.yml      Full-stack container orchestration
+└── Dockerfile              FastAPI container image
 ```
 
-## Docker Usage
+## Additional Screenshots
 
-Build and run the full API stack:
+### Swagger API Documentation
 
-```bash
-docker compose up --build
-```
+![Swagger API documentation](docs/screenshots/swagger-docs.png)
 
-Run in the background:
+### Test Coverage
 
-```bash
-docker compose up --build -d
-```
+![Backend test coverage](docs/screenshots/test-coverage.png)
 
-View API logs:
+## What This Project Demonstrates
 
-```bash
-docker compose logs -f api
-```
+This project demonstrates full-stack development across a typed React interface, REST API design, relational database modeling, transactional business logic, automated testing, containerization, reverse proxy configuration, and continuous integration.
 
-Stop containers:
-
-```bash
-docker compose down
-```
-
-## Makefile Commands
-
-If using the included Makefile:
-
-```bash
-make run
-make test
-make test-cov
-make lint
-make format
-make db-up
-make db-down
-make docker-up
-make docker-down
-make docker-logs
-make seed
-```
-
-## Example Product Request
-
-```json
-{
-  "sku": "LAPTOP-001",
-  "name": "Business Laptop",
-  "description": "Standard office laptop",
-  "quantity": 20,
-  "price": "899.99"
-}
-```
-
-## Example Order Request
-
-```json
-{
-  "customer_name": "Jane Smith",
-  "items": [
-    {
-      "product_id": 1,
-      "quantity": 2
-    }
-  ]
-}
-```
-
-## Portfolio Summary
-
-This project demonstrates backend API development using FastAPI, PostgreSQL, SQLAlchemy, and Docker. It goes beyond basic CRUD by implementing transaction-safe order creation, inventory validation, order status workflows, reporting endpoints, CSV exports, CI checks, and automated tests for business-critical edge cases.
+It goes beyond basic CRUD by addressing realistic operational concerns such as concurrent stock updates, audit history, order state rules, overselling prevention, data exports, service health checks, and reproducible deployment.
