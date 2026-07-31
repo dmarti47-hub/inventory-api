@@ -384,3 +384,7 @@ inventory-api/
 This project demonstrates full-stack development across a typed React interface, REST API design, relational database modeling, transactional business logic, automated testing, containerization, reverse proxy configuration, and continuous integration.
 
 It goes beyond basic CRUD by addressing realistic operational concerns such as concurrent stock updates, audit history, order state rules, overselling prevention, data exports, service health checks, and reproducible deployment.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
