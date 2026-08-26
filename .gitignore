@@ -1,12 +1,12 @@
 __pycache__/
 *.pyc
 .env
+.env.production
 .venv/
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
-alembic/versions/*.py
-!alembic/versions/.gitkeep
+frontend/dist/
+frontend/node_modules/
 .DS_Store
-htmlcov/
-.coverage

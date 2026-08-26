@@ -347,6 +347,12 @@ The frontend job:
 - Runs ESLint
 - Performs a TypeScript and Vite production build
 
+## AWS EC2 Deployment
+
+The application includes a production Docker Compose configuration and deployment scripts for a cost-controlled, single-instance AWS EC2 portfolio deployment. The public Nginx service exposes the React application and proxies `/api` to FastAPI; PostgreSQL and the API container remain on private Docker networks without public host ports.
+
+See [deploy/ec2/README.md](deploy/ec2/README.md) for the EC2 configuration, security-group rules, secret creation, deployment, operations, backup, and HTTPS guidance.
+
 ## Project Structure
 
 ```text
