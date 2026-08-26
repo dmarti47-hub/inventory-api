@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/dmarti47-hub/inventory-api/actions/workflows/ci.yml/badge.svg)](https://github.com/dmarti47-hub/inventory-api/actions/workflows/ci.yml)
 
+[**Live Demo**](http://18.224.107.81/) · [**API Documentation**](http://18.224.107.81/api/docs)
+
+> The live deployment contains synthetic demonstration data only. It currently uses HTTP, so do not submit sensitive information.
+
 A full-stack inventory and order management application built with React, TypeScript, FastAPI, PostgreSQL, and Docker.
 
 The application models a practical operations workflow: product management, auditable stock adjustments, transaction-safe order placement, order status transitions, low-stock monitoring, revenue reporting, and CSV exports.
@@ -22,7 +26,11 @@ The application models a practical operations workflow: product management, audi
 - One-command full-stack Docker Compose setup
 - Automated backend and frontend tests
 - GitHub Actions CI for linting, testing, and production builds
-- CSV exports for operational reporting
+- CSV exports for operational 
+- Deployed on AWS EC2 with production Docker Compose
+- Public Nginx frontend with reverse-proxied API access
+- Private API and PostgreSQL networking
+- Persistent database storage and container health checks
 
 ## Tech Stack
 
@@ -349,7 +357,23 @@ The frontend job:
 
 ## AWS EC2 Deployment
 
-The application includes a production Docker Compose configuration and deployment scripts for a cost-controlled, single-instance AWS EC2 portfolio deployment. The public Nginx service exposes the React application and proxies `/api` to FastAPI; PostgreSQL and the API container remain on private Docker networks without public host ports.
+**Live application:** http://18.224.107.81/
+
+The application is deployed to an Ubuntu AWS EC2 instance as a three-container production stack:
+
+- Nginx serves the compiled React application on port 80
+- Nginx proxies `/api` requests to FastAPI over a private Docker network
+- FastAPI connects to PostgreSQL over a separate private data network
+- API and PostgreSQL ports are not published to the EC2 host
+- PostgreSQL data persists in a named Docker volume
+- Health checks and restart policies provide basic service recovery
+- SSH access is restricted by the EC2 security group
+
+The deployment uses environment-based credentials stored outside Git, automated Alembic migrations, a 2 GiB swap file for the small EC2 instance, and deployment scripts checked into the repository.
+
+See [deploy/ec2/README.md](deploy/ec2/README.md) for configuration, deployment, operations, backup, and future HTTPS guidance.
+
+> The current EC2 public IP may change if the instance is stopped and restarted because an Elastic IP has not been assigned.
 
 See [deploy/ec2/README.md](deploy/ec2/README.md) for the EC2 configuration, security-group rules, secret creation, deployment, operations, backup, and HTTPS guidance.
 
